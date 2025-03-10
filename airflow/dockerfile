@@ -1,0 +1,12 @@
+FROM apache/airflow:latest
+
+
+RUN pip install --no-cache-dir apache-airflow-providers-postgres
+ENV TZ=Europe/Paris
+# COPY dags /opt/airflow/dags
+COPY ./entrypoint.sh /entrypoint.sh
+USER root
+# COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+USER airflow
+ENTRYPOINT ["/entrypoint.sh"]

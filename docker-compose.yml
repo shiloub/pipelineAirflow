@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    build: ./postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+      POSTGRES_INITDB_WALDIR: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres/init:/docker-entrypoint-initdb.d/
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./datafile:/data
+
+  airflow:
+    build: ./airflow
+    container_name: airflow
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__DEFAULT_TIMEZONE=Europe/Paris
+      - AIRFLOW_CONN_POSTGRES_DEFAULT=postgresql://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE=UTC
+      - AIRFLOW_HOME=/opt/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./airflow.cfg:/opt/airflow/airflow.cfg
+      - ./datafile:/opt/airflow/data
+
+networks:
+  default:
+    name: airflow-network
