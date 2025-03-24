@@ -226,8 +226,13 @@ with DAG(dag_id="invoices_dag",
     # is_new_data_available >> transform_data
     # transform_data >> create_table >> save_into_db
     # save_into_db >> notify_data_science_team
+
+
+
     isNewDataAvailable >> create_table_invoices >> transform_data
     transform_data >> load_data >> create_table_rapport >> check_data_query >> branch_task
     branch_task >> [make_rapport, make_null_rapport]
+
+
 
     # save_into_db >> create_report
