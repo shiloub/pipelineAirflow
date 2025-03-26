@@ -30,6 +30,12 @@ def makexcom():
 def printxcom(n, **kwargs):
     print(kwargs["ti"].xcom_pull(task_ids='makexcom')[n - 1])
     
+def getxcom(my_list, **kwargs):
+    print(my_list)
+    print(isinstance(my_list, list))
+    # my_list = list(my_list)
+    # print(isinstance(my_list, list))
+    
 def return3():
     return (3)
 
@@ -50,33 +56,43 @@ with DAG(dag_id="dynamically_created_task_dag",
         dag=dag
     )
     
-    make_number_of_tasks = PythonOperator(
-        task_id = "makenumberoftasks",
-        python_callable = return3,
-        dag = dag
+    # make_number_of_tasks = PythonOperator(
+    #     task_id = "makenumberoftasks",
+    #     python_callable = return3,
+    #     dag = dag
+    # )
+    
+    get_xcom = PythonOperator(
+        task_id = "get_xcom",
+        python_callable = getxcom,
+        op_kwargs={
+           "my_list": json.loads("{{ task_instance.xcom_pull(task_ids='makexcom') }}")
+        },
+        provide_context = True
+        
     )
     
     
-    with TaskGroup("group_1", dag=dag) as group: 
+    # with TaskGroup("group_1", dag=dag) as group: 
         
-        task_nb = int(XComArg(make_number_of_tasks))
+    #     task_nb = int(XComArg(make_number_of_tasks))
         
-        # task_nb = number
-        # for i in range(3):
-        for i in range(task_nb):
-            task = PythonOperator(
-                task_id = f"task_{i + 1}",
-                python_callable = printxcom,
-                op_args = [i + 1],
-                provide_context = True,
-                dag=dag
-            )
+    #     # task_nb = number
+    #     # for i in range(3):
+    #     for i in range(task_nb):
+    #         task = PythonOperator(
+    #             task_id = f"task_{i + 1}",
+    #             python_callable = printxcom,
+    #             op_args = [i + 1],
+    #             provide_context = True,
+    #             dag=dag
+    #         )
     
     end = DummyOperator(
         task_id = "end",
         dag=dag
     )
-start >> make_number_of_tasks >> makexcom >> group >> end
+start >> makexcom >> get_xcom >> end
 
 
 
