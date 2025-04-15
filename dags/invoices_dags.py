@@ -31,6 +31,7 @@ def loadData(**kwargs):
     df = pd.read_csv(transformed_data_path, encoding='ISO-8859-1')
     df['invoicedate'] = pd.to_datetime(df['invoicedate'])
     engine = create_engine("postgresql+psycopg2://airflow:airflow@postgres:5432/mydb")
+    print(df.shape)
     df.to_sql("invoices", engine, if_exists="append", index=False)
 
 
